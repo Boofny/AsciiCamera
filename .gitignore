@@ -1,0 +1,16 @@
+env/
+TODO.txt
+node_modules/
+.env
+links.txt
+links.log
+seats.log
+*.out
+*.exe
+a.out
+Makefile
+build/
+GoGoGo.png
+input.txt
+venv/
+.env
