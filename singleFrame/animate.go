@@ -13,7 +13,7 @@ import (
 	_ "image/jpeg" // Import for JPEG support
 	_ "image/png"  // Import for PNG support
 
-	"golang.org/x/term"
+	// "golang.org/x/term"
 )
 
 // asciiChars represents an ordered set of characters from dark to light const asciiChars = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. "
@@ -25,7 +25,7 @@ func main() {
 	picSize := flag.Int("s", 80, "size of ascii image in terminal")
 	t := 10
 	flag.Parse()
-
+	fmt.Print("\033[H\033[2J") // Clear screen and move to top-left
 	// now := time.Now()
 	for i := 0; i < t; i++ {
 		go getImage(*picSize, ch)
@@ -39,11 +39,11 @@ func main() {
 	}
 	// sizer := <-asciiHeight
 
-	w, h, err := term.GetSize(0)
-	if err != nil {
-		return 
-	}
-	fmt.Print(w, h)
+	// w, h, err := term.GetSize(0)
+	// if err != nil {
+	// 	return 
+	// }
+	// fmt.Print(w, h)
 	time.Sleep(time.Second)
 	// var lines int 
 	for i := 0; i < t; i++ {
