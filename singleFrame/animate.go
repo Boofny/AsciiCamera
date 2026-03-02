@@ -22,13 +22,14 @@ const URLS = "https://picsum.photos/200/300"
 func main() {
 	arr := make([]string, 10)
 	ch := make(chan string)
+	adjHeight := make(chan int)
 	picSize := flag.Int("s", 80, "size of ascii image in terminal")
 	t := 10
 	flag.Parse()
-	fmt.Print("\033[H\033[2J") // Clear screen and move to top-left
+	// fmt.Print("\033[H\033[2J") // Clear screen and move to top-left
 	// now := time.Now()
 	for i := 0; i < t; i++ {
-		go getImage(*picSize, ch)
+		go getImage(*picSize, ch, adjHeight)
 	}
 
 	// fmt.Println(time.Since(now))
@@ -37,6 +38,8 @@ func main() {
 		frame := <-ch
 		arr[i] = frame
 	}
+
+	fmt.Print("\033[H\033[2J") // Clear screen and move to top-left
 	// sizer := <-asciiHeight
 
 	// w, h, err := term.GetSize(0)
@@ -54,10 +57,11 @@ func main() {
 		fmt.Print(arr[i])
 		time.Sleep(500 * time.Millisecond)
 	}
+	fmt.Println(<-adjHeight)
   // fmt.Printf("\033[%dB", *picSize/3)
 }
 
-func getImage(picSize int, ch chan<- string) {
+func getImage(picSize int, ch chan<- string, size chan int) {
 	resp, err := http.Get(URLS)
 	if err != nil {
 		fmt.Println("Error decoding image:", err)
@@ -74,8 +78,10 @@ func getImage(picSize int, ch chan<- string) {
 
 	outputWidth := picSize
 	outputHeight := int(float64(height) / float64(width) * float64(outputWidth) * 0.5) // Adjust aspect ratio
+	fmt.Println(outputHeight)
 	f := colorASCII(outputHeight, outputWidth, height, width, img)
 	ch <- f
+	size <- outputHeight
 }
 
 func colorASCII(outputHeight, outputWidth, height, width int, img image.Image)string{
