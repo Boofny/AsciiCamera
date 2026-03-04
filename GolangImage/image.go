@@ -17,10 +17,11 @@ import (
 // asciiChars represents an ordered set of characters from dark to light const asciiChars = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. "
 
 const URL = "https://picsum.photos/200/300"
+
 func main() {
 	picSize := flag.Int("s", 80, "size of ascii image in terminal")
 
-	for range 10{ // i guess this would work in the tcp server 
+	for range 10 { // i guess this would work in the tcp server
 		resp, err := http.Get(URL)
 		if err != nil {
 			return
@@ -44,10 +45,10 @@ func main() {
 	}
 }
 
-func GrayScaleImage(outputHeight, outputWidth, height, width int, img image.Image)string{
+func GrayScaleImage(outputHeight, outputWidth, height, width int, img image.Image) string {
 	im := make([][]string, outputHeight)
 
-	for y := range outputHeight{
+	for y := range outputHeight {
 		im[y] = make([]string, outputWidth)
 	}
 
@@ -62,12 +63,12 @@ func GrayScaleImage(outputHeight, outputWidth, height, width int, img image.Imag
 			gray := (r + g + b) / 3
 
 			charIndex := int(float64(gray) / 65535.0 * float64(len(asciiChars)-1))
-			im[y][x] = string( asciiChars[charIndex] )
+			im[y][x] = string(asciiChars[charIndex])
 		}
 	}
 	var r string
 
-	for x := range im{
+	for x := range im {
 		for _, i := range im[x] {
 			r += i
 		}
@@ -76,11 +77,10 @@ func GrayScaleImage(outputHeight, outputWidth, height, width int, img image.Imag
 	return r
 }
 
-
-func ColorSpaces(outputHeight, outputWidth, height, width int, img image.Image)[][]string{
+func ColorSpaces(outputHeight, outputWidth, height, width int, img image.Image) [][]string {
 	im := make([][]string, outputHeight)
 	// for y := 0; y < outputHeight; y++ {
-	for y := range outputHeight{
+	for y := range outputHeight {
 		im[y] = make([]string, outputWidth)
 	}
 	resetColor := "\033[0m"
@@ -105,10 +105,10 @@ func ColorSpaces(outputHeight, outputWidth, height, width int, img image.Image)[
 	return im
 }
 
-func ColorANSI(outputHeight, outputWidth, height, width int, img image.Image, asciiChar string)[][]string{
+func ColorANSI(outputHeight, outputWidth, height, width int, img image.Image, asciiChar string) [][]string {
 	im := make([][]string, outputHeight)
 	// for y := 0; y < outputHeight; y++ {
-	for y := range outputHeight{
+	for y := range outputHeight {
 		im[y] = make([]string, outputWidth)
 	}
 	resetColor := "\033[0m"
@@ -133,10 +133,10 @@ func ColorANSI(outputHeight, outputWidth, height, width int, img image.Image, as
 	return im
 }
 
-func ColorASCII(outputHeight, outputWidth, height, width int, img image.Image)[][]string{
+func ColorASCII(outputHeight, outputWidth, height, width int, img image.Image) [][]string {
 	const asciiChars = "#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/()1{}[]?"
 	im := make([][]string, outputHeight)
-	for y := range outputHeight{
+	for y := range outputHeight {
 		im[y] = make([]string, outputWidth)
 	}
 	resetColor := "\033[0m"
@@ -161,9 +161,9 @@ func ColorASCII(outputHeight, outputWidth, height, width int, img image.Image)[]
 
 			// fmt.Print(correctColor, string(asciiChars[charIndex]), resetColor)
 			var s string
-			if string(asciiChars[charIndex]) == "@"{
+			if string(asciiChars[charIndex]) == "@" {
 				s = " "
-			}else{
+			} else {
 				s = fmt.Sprint(correctColor, string(asciiChars[charIndex]), resetColor)
 			}
 			im[y][x] = s
@@ -171,4 +171,3 @@ func ColorASCII(outputHeight, outputWidth, height, width int, img image.Image)[]
 	}
 	return im
 }
-
