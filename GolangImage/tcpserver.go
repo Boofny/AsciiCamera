@@ -71,7 +71,7 @@ func handleConnection(conn net.Conn) {
 
 		outputWidth := 80
 		outputHeight := int(float64(height) / float64(width) * float64(outputWidth) * 0.5) // Adjust aspect ratio
-		f := colorSpaces(outputHeight, outputWidth, height, width, img)
+		f := colorASCII(outputHeight, outputWidth, height, width, img)
 		fmt.Printf("\033[%dA", outputWidth)
 		fmt.Println("\n\n")
 		fmt.Println(f)
@@ -81,6 +81,7 @@ func handleConnection(conn net.Conn) {
 func colorASCII(outputHeight, outputWidth, height, width int, img image.Image) string {
 	// const asciiChars = "#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/()1{}[]?"
 	const asciiChars = "#"
+
 	// const asciiChars = "󰝤"
 	var resp string
 	resetColor := "\033[0m"
