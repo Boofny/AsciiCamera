@@ -105,6 +105,9 @@ func colorASCII(outputHeight, outputWidth, height, width int, img image.Image) s
 			pixel := img.At(originalX, originalY)
 			r, g, b, _ := pixel.RGBA()
 			gray := (r + g + b) / 3
+   // if im just going to use # for the char
+   // than no need to find the charindex for gray
+   // unless ofc you use a longer string of chars
 			charIndex := int(float64(gray) / 65535.0 * float64(len(asciiChars)-1))
 			fmt.Fprintf(&sb, "\u001b[38;2;%d;%d;%dm", r>>8, g>>8, b>>8)
 			sb.WriteByte(asciiChars[charIndex])
