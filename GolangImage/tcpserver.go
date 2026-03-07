@@ -13,9 +13,9 @@ import (
 	"strings"
 )
 
-// golang perfomince changes 
+// golang perfomince changes
 /*
-Number one made a bufferd chanel for the image 
+Number one made a bufferd chanel for the image
 Made a seperate goroutine just for the printing in order to have better printings even at large scale
 Found out about the select design pattern that skips the unused frames from a channl very cool
 */
@@ -34,8 +34,8 @@ func main() {
 
 	fmt.Print("\033[H\033[2J") // Clear screen and move to top-left
 
-	go func ()  { // single goroutine in order to have good timing with the img channel
-		for img := range imgCh{
+	go func() { // single goroutine in order to have good timing with the img channel
+		for img := range imgCh {
 			fmt.Printf("\033[%dA\n\n%s", *picWidth, img)
 		}
 	}()
@@ -84,15 +84,15 @@ func handleConnection(conn net.Conn, imgCh chan string) {
 
 		outputWidth := *picWidth
 		outputHeight := int(float64(height) / float64(width) * float64(outputWidth) * 0.5) // Adjust aspect ratio
-		f := colorASCII(outputHeight, outputWidth, height, width, img)
-		select{ // works by only running/displying if the goroutine is ready if not just skip a frame
+		f := colorSpaces(outputHeight, outputWidth, height, width, img)
+		select { // works by only running/displying if the goroutine is ready if not just skip a frame
 		case imgCh <- f:
 		default:
 		}
 	}
 }
 
-func colorASCII(outputHeight, outputWidth, height, width int, img image.Image) string{
+func colorASCII(outputHeight, outputWidth, height, width int, img image.Image) string {
 	const asciiChars = "#"
 	resetColor := "\033[0m"
 	var sb strings.Builder
@@ -104,18 +104,13 @@ func colorASCII(outputHeight, outputWidth, height, width int, img image.Image) s
 			originalY := int(float64(y) / float64(outputHeight) * float64(height))
 			pixel := img.At(originalX, originalY)
 			r, g, b, _ := pixel.RGBA()
-			gray := (r + g + b) / 3
-   // if im just going to use # for the char
-   // than no need to find the charindex for gray
-   // unless ofc you use a longer string of chars
-			charIndex := int(float64(gray) / 65535.0 * float64(len(asciiChars)-1))
 			fmt.Fprintf(&sb, "\u001b[38;2;%d;%d;%dm", r>>8, g>>8, b>>8)
-			sb.WriteByte(asciiChars[charIndex])
+			sb.WriteString(asciiChars)
 			sb.WriteString(resetColor)
 		}
 		sb.WriteByte('\n')
 	}
-  return sb.String()
+	return sb.String()
 }
 
 // func colorASCII(outputHeight, outputWidth, height, width int, img image.Image) string {
@@ -165,9 +160,29 @@ func colorASCII(outputHeight, outputWidth, height, width int, img image.Image) s
 //			fmt.Print(string(msg))
 //		}
 //	}
+
 func colorSpaces(outputHeight, outputWidth, height, width int, img image.Image) string {
-	var resp string
+
+	// const asciiChars = "#"
+	// resetColor := "\033[0m"
+	// var sb strings.Builder
+	// sb.Grow(outputHeight * outputWidth * 25)
+
+	// for y := range outputHeight {
+	// 	for x := range outputWidth {
+	// 		originalX := int(float64(x) / float64(outputWidth) * float64(width))
+	// 		originalY := int(float64(y) / float64(outputHeight) * float64(height))
+	// 		pixel := img.At(originalX, originalY)
+	// 		r, g, b, _ := pixel.RGBA()
+	// 		fmt.Fprintf(&sb, "\u001b[38;2;%d;%d;%dm", r>>8, g>>8, b>>8)
+	// 		sb.WriteString(asciiChars)
+	// 		sb.WriteString(resetColor)
+	// 	}
+	// 	sb.WriteByte('\n')
+	// }
+	// return sb.String()
 	resetColor := "\033[0m"
+	var sb strings.Builder
 	for y := range outputHeight {
 		for x := range outputWidth {
 			// Get pixel from original image, scaled to output dimensions
@@ -183,9 +198,9 @@ func colorSpaces(outputHeight, outputWidth, height, width int, img image.Image) 
 			correctColor := fmt.Sprintf("\x1b[48;2;%d;%d;%dm \x1B[0m", red, green, blue)
 
 			s := fmt.Sprint(correctColor, resetColor)
-			resp += s
+			sb.WriteString(s)
 		}
-		resp += "\n"
+		sb.WriteByte('\n')
 	}
-	return resp
+	return sb.String()
 }
