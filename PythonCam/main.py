@@ -38,7 +38,7 @@ try:
         s.sendall(jpeg_bytes)
 
         # Show frame locally
-        cv.imshow('cam', frame)
+        cv.imshow('cam', cv.flip(frame, 1))
         if cv.waitKey(1) == 113:  # 'q' key
             break
 finally:

@@ -84,7 +84,7 @@ func handleConnection(conn net.Conn, imgCh chan string) {
 
 		outputWidth := *picWidth
 		outputHeight := int(float64(height) / float64(width) * float64(outputWidth) * 0.5) // Adjust aspect ratio
-		f := colorSpaces(outputHeight, outputWidth, height, width, img)
+		f := colorASCII(outputHeight, outputWidth, height, width, img)
 		select { // works by only running/displying if the goroutine is ready if not just skip a frame
 		case imgCh <- f:
 		default:
@@ -100,6 +100,7 @@ func colorASCII(outputHeight, outputWidth, height, width int, img image.Image) s
 
 	for y := range outputHeight {
 		for x := range outputWidth {
+			x = outputWidth-(x+1)
 			originalX := int(float64(x) / float64(outputWidth) * float64(width))
 			originalY := int(float64(y) / float64(outputHeight) * float64(height))
 			pixel := img.At(originalX, originalY)
@@ -185,6 +186,8 @@ func colorSpaces(outputHeight, outputWidth, height, width int, img image.Image) 
 	var sb strings.Builder
 	for y := range outputHeight {
 		for x := range outputWidth {
+			x = outputWidth-(x+1)
+
 			// Get pixel from original image, scaled to output dimensions
 			originalX := int(float64(x) / float64(outputWidth) * float64(width))
 			originalY := int(float64(y) / float64(outputHeight) * float64(height))
