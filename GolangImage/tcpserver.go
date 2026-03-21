@@ -114,8 +114,8 @@ func colorASCII(outputHeight, outputWidth, height, width int, img image.Image) s
 }
 
 // func colorASCII(outputHeight, outputWidth, height, width int, img image.Image) string {
-// 	// const asciiChars = "#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/()1{}[]?"
-// 	const asciiChars = "#"
+// 	const asciiChars = "#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/()1{}[]?"
+// 	// const asciiChars = "#"
 // 	var resp string
 // 	resetColor := "\033[0m"
 // 	for y := range outputHeight {
