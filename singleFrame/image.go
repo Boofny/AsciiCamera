@@ -133,7 +133,7 @@ func ColorANSI(outputHeight, outputWidth, height, width int, img image.Image, as
 	return im
 }
 
-func ColorASCII(outputHeight, outputWidth, height, width int, img image.Image) [][]string {
+func colorASCII(outputHeight, outputWidth, height, width int, img image.Image) [][]string {
 	const asciiChars = "#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/()1{}[]?"
 	im := make([][]string, outputHeight)
 	for y := range outputHeight {
