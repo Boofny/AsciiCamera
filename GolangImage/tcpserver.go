@@ -19,7 +19,7 @@ Found out about the select design pattern that skips the unused frames from a ch
 */
 var picWidth = flag.Int("s", 80, "Size of image output") // global size so any thing can use this
 
-var camType = flag.Int("cam", 1,
+var camType = flag.Int("mode", 1,
 	"The type of Camera display, 1 for Color pound sign, 2 for ascii color spaces, 3 list of ascii chars, 4 gray ascii output")
 
 type Mode uint8
@@ -31,13 +31,32 @@ const (
 	GreyASCII
 )
 
+// PickMode just picks the function that the flag chooses and the default for the flag is always 1 so no need for default 
+func PickMode(mode Mode)CamFunc{
+	var resp CamFunc
+	fmt.Println(mode)
+	switch mode{
+	case ColorPound:
+		resp = ColoredASCIIPound
+	case ASCIIColor: 
+		resp = ColorSpaces
+	case ColorASCIIChars:
+		resp = ColorASCII
+	case GreyASCII:
+		resp = GrayScaleImage
+	default:
+		log.Fatal("Not a mode select 1-4")
+	}
+	return resp
+}
+
+var camMode CamFunc// may work?
+
 func main() {
 	flag.Parse()
+	camMode = PickMode(Mode(*camType)) // may work?
 
-	// will be used for flags later
-	// switch *camType{
-	// 	case ColorPound:
-	// }
+	// camMode := PickMode(Mode(*camType))
 	imgCh := make(chan string, 1)
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
@@ -98,7 +117,7 @@ func handleConnection(conn net.Conn, imgCh chan string) {
 
 		outputWidth := *picWidth
 		outputHeight := int(float64(height) / float64(width) * float64(outputWidth) * 0.5) // Adjust aspect ratio
-		f := ColorASCII(outputHeight, outputWidth, height, width, img)
+		f := camMode(outputHeight, outputWidth, height, width, img)
 		select { // works by only running/displying if the goroutine is ready if not just skip a frame
 		case imgCh <- f:
 		default:

@@ -7,15 +7,7 @@ import (
 	"strings"
 )
 
-type CamFunc func(ImgParam) string
-
-type ImgParam struct {
-	OutPutHeight,
-	OutPutWidth,
-	Height,
-	Width int
-	Img image.Image
-}
+type CamFunc func (outputHeight, outputWidth, height, width int, img image.Image) string
 
 func ColoredASCIIPound(outputHeight, outputWidth, height, width int, img image.Image) string {
 	const asciiChar = '#'
