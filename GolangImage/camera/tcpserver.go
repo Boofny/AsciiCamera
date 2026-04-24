@@ -1,4 +1,5 @@
-package main
+// Package camera holds the code for running the tcpserver and the camera mode methods
+package camera
 
 import (
 	"bytes"
@@ -52,15 +53,16 @@ func PickMode(mode Mode)CamFunc{
 
 var camMode CamFunc// may work?
 
-func main() {
+func RunCam() error {
 	flag.Parse()
 	camMode = PickMode(Mode(*camType)) // may work?
 
 	// camMode := PickMode(Mode(*camType))
 	imgCh := make(chan string, 1)
+	errCh := make(chan error, 1)
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
-		log.Fatal("Error listening:", err)
+		return err
 	}
 
 	defer listener.Close()
@@ -79,46 +81,51 @@ func main() {
 			log.Println("Error accepting conn:", err)
 			continue
 		}
-		go handleConnection(conn, imgCh)
+		go handleConnection(conn, imgCh, errCh)
+		select{
+		case err := <- errCh:
+			log.Fatal(err)
+		default:
+		}
 	}
 }
 
-func handleConnection(conn net.Conn, imgCh chan string) {
+func handleConnection(conn net.Conn, imgCh chan string, errCh chan<- error){
 	defer conn.Close()
-
 	for {
-		// Step 1: Read 4-byte length
 		lengthBytes := make([]byte, 4)
 		_, err := io.ReadFull(conn, lengthBytes)
 		if err != nil {
 			fmt.Println("Connection closed or error:", err)
-			return
+			errCh <- err
 		}
-		length := binary.BigEndian.Uint32(lengthBytes)
 
-		// Step 2: Read the full JPEG frame
+		length := binary.BigEndian.Uint32(lengthBytes)
+		if length == 0xFFFFFFFF {
+			fmt.Println("Shutdown signal received")
+			errCh <- err
+		}
+
 		jpegData := make([]byte, length)
 		_, err = io.ReadFull(conn, jpegData)
 		if err != nil {
 			fmt.Println("Error reading frame:", err)
-			return
+			errCh <- err
 		}
 
-		// Step 3: Optionally decode or save
 		img, err := jpeg.Decode(bytes.NewReader(jpegData))
 		if err != nil {
 			fmt.Println("Failed to decode JPEG:", err)
-			continue
+			errCh <- err
 		}
 
-		// fmt.Println("Received image:", img.At(100, 100))
 		bounds := img.Bounds()
 		width, height := bounds.Max.X, bounds.Max.Y
-
 		outputWidth := *picWidth
-		outputHeight := int(float64(height) / float64(width) * float64(outputWidth) * 0.5) // Adjust aspect ratio
+		outputHeight := int(float64(height) / float64(width) * float64(outputWidth) * 0.5)
 		f := camMode(outputHeight, outputWidth, height, width, img)
-		select { // works by only running/displying if the goroutine is ready if not just skip a frame
+
+		select {
 		case imgCh <- f:
 		default:
 		}

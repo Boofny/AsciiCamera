@@ -40,6 +40,8 @@ try:
         # Show frame locally
         cv.imshow('cam', cv.flip(frame, 1))
         if cv.waitKey(1) == 113:  # 'q' key
+            conn.sendall(struct.pack('>I', 0xFFFFFFFF))
+            conn.close()
             break
 finally:
     s.close()

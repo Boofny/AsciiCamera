@@ -1,4 +1,4 @@
-package main
+package camera
 
 //TODO: make the function use byte streams rather than using strings
 import (
