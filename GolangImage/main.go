@@ -1,11 +1,11 @@
-
 package main
 
 import (
+	"CameraAscciEngine/camera"
 	"context"
+	"fmt"
 	"log"
 	"os/signal"
-	"CameraAscciEngine/camera"
 	"syscall"
 	// "quick/database"
 )
@@ -23,9 +23,11 @@ func gracefulShutdown(done chan bool) {
 }
 
 func main() {
-	err := camera.RunCam()
+	ctx := context.Background()
+	err := camera.RunCam(ctx)
 	if err != nil {
-		panic(err)
+		fmt.Print("\033[H\033[2J") // Clear screen and move to top-left
+		return
 	}
 
 	// Create a done channel to signal when the shutdown is complete

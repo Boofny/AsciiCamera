@@ -3,6 +3,7 @@ package camera
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"flag"
 	"fmt"
@@ -53,7 +54,10 @@ func PickMode(mode Mode)CamFunc{
 
 var camMode CamFunc// may work?
 
-func RunCam() error {
+func RunCam(ctx context.Context) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	flag.Parse()
 	camMode = PickMode(Mode(*camType)) // may work?
 
@@ -75,35 +79,43 @@ func RunCam() error {
 		}
 	}()
 
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			log.Println("Error accepting conn:", err)
-			continue
+	go func(){
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				log.Fatal("Error accepting conn:", err)
+				continue
+			}
+			go handleConnection(conn, imgCh, errCh, cancel)
 		}
-		go handleConnection(conn, imgCh, errCh)
-		select{
-		case err := <- errCh:
-			log.Fatal(err)
-		default:
-		}
-	}
+	}()
+
+	<-ctx.Done()
+	listener.Close()
+	return ctx.Err()
 }
 
-func handleConnection(conn net.Conn, imgCh chan string, errCh chan<- error){
+func handleConnection(conn net.Conn, imgCh chan string, errCh chan<- error, cancel context.CancelFunc){
 	defer conn.Close()
 	for {
 		lengthBytes := make([]byte, 4)
 		_, err := io.ReadFull(conn, lengthBytes)
 		if err != nil {
-			fmt.Println("Connection closed or error:", err)
-			errCh <- err
+			if err == io.EOF || err == io.ErrUnexpectedEOF {
+				fmt.Println("Connection closed cleanly")
+				cancel() // or however you signal shutdown
+				return
+			}
+			fmt.Println("Connection error:", err)
+			cancel()
+			return
 		}
-
 		length := binary.BigEndian.Uint32(lengthBytes)
+		fmt.Printf("received length: 0x%X\n", length) // add this
 		if length == 0xFFFFFFFF {
 			fmt.Println("Shutdown signal received")
-			errCh <- err
+			cancel()
+			return
 		}
 
 		jpegData := make([]byte, length)
