@@ -95,6 +95,7 @@ func RunCam(ctx context.Context) error {
 	return ctx.Err()
 }
 
+// NOTE: error Chanel is not being used eithor find a way to use it or remove later 
 func handleConnection(conn net.Conn, imgCh chan string, errCh chan<- error, cancel context.CancelFunc){
 	defer conn.Close()
 	for {
