@@ -91,18 +91,14 @@ func RunCam(ctx context.Context) error {
 	}()
 
 	// could use this somehow to implement the errCh aswell as the ctx channel
-	for range 2{
-		select{
-			case <-ctx.Done:
-				listener.Close();
-				return ctx.Err()
-			case err := <-errCh:
-				return err
-		}
+
+	select{
+	case <-ctx.Done():
+		listener.Close();
+		return ctx.Err()
+	case err := <-errCh:
+		return err
 	}
-	// <-ctx.Done()
-	// listener.Close()
-	return ctx.Err()
 }
 
 // NOTE: error Chanel is not being used eithor find a way to use it or remove later 
