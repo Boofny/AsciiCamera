@@ -7,7 +7,6 @@ import (
 	"log"
 	"os/signal"
 	"syscall"
-	// "quick/database"
 )
 
 func gracefulShutdown(done chan bool) {
